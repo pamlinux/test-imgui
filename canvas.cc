@@ -248,8 +248,10 @@ static void ShowExampleAppCustomRendering(bool* p_open) {
     ImGui::PopStyleColor();
     ImGui::PopStyleVar();
     const ImVec2 p = ImGui::GetCursorScreenPos();
+    ImGuiIO& io = ImGui::GetIO();
+    const ImVec2 mouse_pos_in_canvas(io.MousePos.x, io.MousePos.y);
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    draw_list->AddCircle(ImVec2(p.x + 100.0, p.y + 100.0), 60.0, col_a, 32, 3.0);
+    draw_list->AddCircle(ImVec2(mouse_pos_in_canvas.x, mouse_pos_in_canvas.y), 60.0, col_a, 32, 3.0);
     
     ImGui::EndChild();
 
