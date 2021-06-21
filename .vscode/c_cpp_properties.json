@@ -4,6 +4,22 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "/home/pam/imgui-1.83",
+                "/home/pam/imgui-1.83/backends",
+                "/home/pam/medwx/stb",
+                "/home/pam/medwx/learnopengl",
+                "/home/pam/medwx"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "macos-clang-x64"
+        },
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
                 "/Users/pam/imgui-1.83",
                 "/Users/pam/imgui-1.83/backends",
                 "/Users/pam/medwx/stb",
@@ -16,6 +32,7 @@
             "cppStandard": "gnu++14",
             "intelliSenseMode": "macos-clang-x64"
         }
+
     ],
     "version": 4
 }

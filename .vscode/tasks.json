@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "cppbuild",
-			"label": "C/C++: clang++ générer le fichier actif",
+			"label": "C/C++: clang++ générer MacOS",
 			"command": "/usr/bin/clang++",
 			"args": [
 				"-g",
@@ -42,6 +42,47 @@
 			],
 			"group": "build",
 			"detail": "compilateur : /usr/bin/clang++"
+		},
+		{
+			"type": "cppbuild",
+			"label": "C/C++: g++ générer linux",
+			"command": "/usr/bin/g++",
+			"args": [
+				"-g",
+				"${file}",
+				"/home/pam/imgui-1.83/glad.c",
+				"/home/pam/imgui-1.83/imgui.cpp",
+				"/home/pam/imgui-1.83/imgui_demo.cpp",
+				"/home/pam/imgui-1.83/imgui_draw.cpp",
+				"/home/pam/imgui-1.83/imgui_tables.cpp",
+				"/home/pam/imgui-1.83/imgui_widgets.cpp",
+				"/home/pam/imgui-1.83/backends/imgui_impl_opengl3.cpp",
+				"/home/pam/imgui-1.83/backends/imgui_impl_glfw.cpp",
+				"file_manager.cc",
+				"opengl_shader.cc",
+				"-o",
+				"${fileDirname}/${fileBasenameNoExtension}",
+				"-I",
+				"/home/pam/imgui-1.83",
+				"-I",
+				"/home/pam/imgui-1.83/backends",
+				"-I",
+				"/home/pam/medwx/stb",
+				"-I",
+				"/home/pam/medwx/learnopengl",
+				"-I",
+				"/home/pam/medwx",
+				"-L/usr/lib/x86_64-linux-gnu",
+				"-lglfw", "-lGL",  "-lX11", "-lpthread", "-lXrandr", "-lXi", "-ldl",
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compilateur : /usr/bin/g++"
 		},
 	]
 }
