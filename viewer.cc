@@ -67,6 +67,8 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
+static void ShowExampleAppImageRotation( unsigned int vao, Shader triangle_shader);
+
 void create_triangle(unsigned int &vbo, unsigned int &vao)
 {
 
@@ -217,12 +219,7 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-		// rendering our geometries
-		triangle_shader.use();
-		glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		glBindVertexArray(0);
+        ShowExampleAppImageRotation(vao, triangle_shader);
 
         static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
 
@@ -264,4 +261,13 @@ int main(int, char**)
     glfwTerminate();
 
     return 0;
+}
+
+static void ShowExampleAppImageRotation( unsigned int vao, Shader triangle_shader) {
+	// rendering our geometries
+	triangle_shader.use();
+	glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	glBindVertexArray(0);
 }
