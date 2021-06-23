@@ -15,7 +15,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-//#include <learnopengl/shader_s.h>
+#include <learnopengl/shader_s.h>
 
 #include <iostream>
 #include <vector>
@@ -66,8 +66,103 @@ static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
+bool show_app_triangle_rotation = false;
+bool show_app_image_rotation = true;
 
-static void ShowExampleAppImageRotation( unsigned int vao, Shader triangle_shader);
+static void ShowExampleAppTriangleRotation( unsigned int vao, TriangleShader triangle_shader);
+static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsigned int texture1, unsigned int texture2);
+static void set_triangle_shader(TriangleShader triangle_shader, float* translation, float rotation, float* color);
+static void set_image_shader(Shader imageShader, float* translation, float rotation, float* color);
+
+void create_image(unsigned int &VBO, unsigned int &VAO, unsigned int &EBO, unsigned int &texture1, unsigned int &texture2)
+{
+    float vertices[] = {
+        // positions          // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
+    };
+
+    unsigned int indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+    };
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+
+    // load and create a texture 
+    // -------------------------
+   // texture 1
+    // ---------
+    glGenTextures(1, &texture1);
+    glBindTexture(GL_TEXTURE_2D, texture1); 
+     // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+    unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    // texture 2
+    // ---------
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+
+
+}
 
 void create_triangle(unsigned int &vbo, unsigned int &vao)
 {
@@ -161,12 +256,16 @@ int main(int, char**)
 	glViewport(0, 0, screen_width, screen_height);
 
 	// create our geometries
-	unsigned int vbo, vao;
-	create_triangle(vbo, vao);
+	unsigned int vbo, vao, ebo, texture1, texture2;
+    
+    if (show_app_triangle_rotation) create_triangle(vbo, vao);
+    if (show_app_image_rotation) create_image(vbo, vao, ebo, texture1, texture2);
+	// init TriangleShader
 
-	// init shader
-	Shader triangle_shader;
-	triangle_shader.init(FileManager::read("simple-shader.vs"), FileManager::read("simple-shader.fs"));
+	TriangleShader triangle_shader;
+    Shader ourShader("4.2.rot.vs", "4.2.rot.fs");
+
+    if (show_app_triangle_rotation) triangle_shader.init(FileManager::read("simple-shader.vs"), FileManager::read("simple-shader.fs"));
 
 
 
@@ -199,7 +298,13 @@ int main(int, char**)
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != NULL);
-
+    if (show_app_image_rotation) {
+        ourShader.use(); // don't forget to activate/use the shader before setting uniforms!
+        // either set it manually like so:
+        glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+        // or set it via the texture class
+        ourShader.setInt("texture2", 1);
+    }
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
@@ -219,8 +324,9 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ShowExampleAppImageRotation(vao, triangle_shader);
-
+        if (show_app_triangle_rotation) ShowExampleAppTriangleRotation(vao, triangle_shader);
+        if (show_app_image_rotation) ShowExampleImageRotation(vao, ourShader, texture1, texture2);
+            
         static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
 
 		// render your GUI
@@ -233,12 +339,12 @@ int main(int, char**)
 		ImGui::SliderFloat2("position", translation, -1.0, 1.0);
         static float color[4] = { 1.0f,1.0f,1.0f,1.0f };
         // pass the parameters to the shader
-        triangle_shader.setUniform("rotation", rotation);
-        triangle_shader.setUniform("translation", translation[0], translation[1]);
         // color picker
         ImGui::ColorEdit3("color", color);
+        if (show_app_triangle_rotation) set_triangle_shader(triangle_shader, translation, rotation, color);
+        //if (show_app_image_rotation) set_image_shader(ourShader, translation, rotation, color);
+
         // multiply triangle's color with this color
-        triangle_shader.setUniform("color", color[0], color[1], color[2]);
         ImGui::End();
 
 		// Render dear imgui into screen
@@ -263,11 +369,64 @@ int main(int, char**)
     return 0;
 }
 
-static void ShowExampleAppImageRotation( unsigned int vao, Shader triangle_shader) {
+static void ShowExampleAppTriangleRotation( unsigned int vao, TriangleShader triangle_shader) {
 	// rendering our geometries
 	triangle_shader.use();
 	glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	glBindVertexArray(0);
+}
+
+static void set_triangle_shader(TriangleShader triangle_shader, float* translation, float rotation, float* color) {
+        triangle_shader.setUniform("rotation", rotation);
+        triangle_shader.setUniform("translation", translation[0], translation[1]);
+        triangle_shader.setUniform("color", color[0], color[1], color[2]);
+
+}
+
+static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsigned int texture1, unsigned int texture2)  {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    // create transformations
+    glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+    // first container
+    // ---------------
+    transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+    transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    // render container
+    unsigned int transformLoc = glGetUniformLocation(imageShader.ID, "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+ 
+    // with the uniform matrix set, draw the first container
+    glBindVertexArray(vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    // second transformation
+    // ---------------------
+    transform = glm::mat4(1.0f); // reset it to identity matrix
+    transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
+    float scaleAmount = sin(glfwGetTime());
+    transform = glm::scale(transform, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, &transform[0][0]); // this time take the matrix value array's first element as its memory pointer value
+
+    // now with the uniform matrix being replaced with new transformations, draw it again.
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+static void set_image_shader(Shader imageShader, float* translation, float rotation, float* color) {
+    glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+    // first container
+    // ---------------
+    transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+    transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    // render container
+    unsigned int transformLoc = glGetUniformLocation(imageShader.ID, "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+    
 }

@@ -8,17 +8,17 @@
 
 #include <GLFW/glfw3.h>
 
-Shader::Shader() {
+TriangleShader::TriangleShader() {
 }
 
-void Shader::init(const std::string& vertex_code, const std::string& fragment_code) {
+void TriangleShader::init(const std::string& vertex_code, const std::string& fragment_code) {
 	vertex_code_ = vertex_code;
 	fragment_code_ = fragment_code;
 	compile();
 	link();
 }
 
-void Shader::compile() {
+void TriangleShader::compile() {
 	const char* vcode = vertex_code_.c_str();
 	vertex_id_ = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex_id_, 1, &vcode, NULL);
@@ -31,7 +31,7 @@ void Shader::compile() {
 	checkCompileErr();
 }
 
-void Shader::link() {
+void TriangleShader::link() {
 	id_ = glCreateProgram();
 	glAttachShader(id_, vertex_id_);
 	glAttachShader(id_, fragment_id_);
@@ -41,41 +41,41 @@ void Shader::link() {
 	glDeleteShader(fragment_id_);
 }
 
-void Shader::use() {
+void TriangleShader::use() {
     glUseProgram(id_);
 }
 
 template<>
-void Shader::setUniform<int>(const std::string& name, int val) {
+void TriangleShader::setUniform<int>(const std::string& name, int val) {
 	glUniform1i(glGetUniformLocation(id_, name.c_str()), val);
 }
 
 template<>
-void Shader::setUniform<bool>(const std::string& name, bool val) {
+void TriangleShader::setUniform<bool>(const std::string& name, bool val) {
 	glUniform1i(glGetUniformLocation(id_, name.c_str()), val);
 }
 
 template<>
-void Shader::setUniform<float>(const std::string& name, float val) {
+void TriangleShader::setUniform<float>(const std::string& name, float val) {
 	glUniform1f(glGetUniformLocation(id_, name.c_str()), val);
 }
 
 template<>
-void Shader::setUniform<float>(const std::string& name, float val1, float val2) {
+void TriangleShader::setUniform<float>(const std::string& name, float val1, float val2) {
 	glUniform2f(glGetUniformLocation(id_, name.c_str()), val1, val2);
 }
 
 template<>
-void Shader::setUniform<float>(const std::string& name, float val1, float val2, float val3) {
+void TriangleShader::setUniform<float>(const std::string& name, float val1, float val2, float val3) {
 	glUniform3f(glGetUniformLocation(id_, name.c_str()), val1, val2, val3);
 }
 
 template<>
-void Shader::setUniform<float*>(const std::string& name, float* val) {
+void TriangleShader::setUniform<float*>(const std::string& name, float* val) {
 	glUniformMatrix4fv(glGetUniformLocation(id_, name.c_str()), 1, GL_FALSE, val);
 }
 
-void Shader::checkCompileErr() {
+void TriangleShader::checkCompileErr() {
     int success;
     char infoLog[1024];
     glGetShaderiv(vertex_id_, GL_COMPILE_STATUS, &success);
@@ -90,7 +90,7 @@ void Shader::checkCompileErr() {
 	}
 }
 
-void Shader::checkLinkingErr() {
+void TriangleShader::checkLinkingErr() {
 	int success;
 	char infoLog[1024];
 	glGetProgramiv(id_, GL_LINK_STATUS, &success);

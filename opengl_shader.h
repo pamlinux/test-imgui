@@ -4,10 +4,10 @@
 #include <string>
 #include <vector>
 
-class Shader
+class TriangleShader
 {
 public:
-	Shader();
+	TriangleShader();
 	void init(const std::string& vertex_code, const std::string& fragment_code);
 	void use();
 	template<typename T> void setUniform(const std::string& name, T val);
