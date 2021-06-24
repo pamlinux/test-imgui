@@ -62,6 +62,11 @@ using namespace gl;
 
 #define PI 3.14159265358979323846
 
+// settings
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
+
+
 static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -70,10 +75,9 @@ bool show_app_triangle_rotation = false;
 bool show_app_image_rotation = true;
 
 static void ShowExampleAppTriangleRotation( unsigned int vao, TriangleShader triangle_shader);
-static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsigned int texture1, unsigned int texture2);
+static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsigned int texture1, unsigned int texture2, unsigned int box_width, unsigned int box_height);
 static void set_triangle_shader(TriangleShader triangle_shader, float* translation, float rotation, float* color);
 static void set_image_shader(Shader imageShader, float* translation, float rotation, float* color);
-
 void create_image(unsigned int &VBO, unsigned int &VAO, unsigned int &EBO, unsigned int &texture1, unsigned int &texture2)
 {
     float vertices[] = {
@@ -221,7 +225,7 @@ int main(int, char**)
 #endif
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Dear ImGui", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -317,6 +321,8 @@ int main(int, char**)
 		glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+        unsigned int box_width = 300;
+        unsigned int box_height = 100;
 
 
         // Start the Dear ImGui frame
@@ -325,18 +331,20 @@ int main(int, char**)
         ImGui::NewFrame();
 
         if (show_app_triangle_rotation) ShowExampleAppTriangleRotation(vao, triangle_shader);
-        if (show_app_image_rotation) ShowExampleImageRotation(vao, ourShader, texture1, texture2);
+        if (show_app_image_rotation) ShowExampleImageRotation(vao, ourShader, texture1, texture2, box_width, box_height);
             
         static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
 
 		// render your GUI
-        ImGui::SetNextWindowSize(ImVec2(300, 100));
+        ImGui::SetNextWindowSize(ImVec2(box_width, box_height));
         ImGui::SetNextWindowPos(ImVec2(0, 0));
  		ImGui::Begin("Triangle Position/Color", NULL, flags);
 		static float rotation = 0.0;
 		ImGui::SliderFloat("rotation", &rotation, 0, 2 * PI);
 		static float translation[] = {0.0, 0.0};
 		ImGui::SliderFloat2("position", translation, -1.0, 1.0);
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::Text("Window Width : %f  Height : %f", io.DisplaySize.x, io.DisplaySize.y);
         static float color[4] = { 1.0f,1.0f,1.0f,1.0f };
         // pass the parameters to the shader
         // color picker
@@ -384,8 +392,13 @@ static void set_triangle_shader(TriangleShader triangle_shader, float* translati
         triangle_shader.setUniform("color", color[0], color[1], color[2]);
 
 }
+static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsigned int texture1, unsigned int texture2, unsigned int box_width, unsigned int box_height) {
+    ImGuiIO& io = ImGui::GetIO();
+    float x = (box_width + (io.DisplaySize.x - box_width) * 0.5) / io.DisplaySize.x;
+    float y = -(box_height + (io.DisplaySize.x - box_height) * 0.5) / io.DisplaySize.y;
+    float xScaleAmount = (io.DisplaySize.x - box_width) / io.DisplaySize.x;
+    float yScaleAmount = (io.DisplaySize.y - box_height) / io.DisplaySize.y;
 
-static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsigned int texture1, unsigned int texture2)  {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture1);
     glActiveTexture(GL_TEXTURE1);
@@ -395,9 +408,9 @@ static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsi
     glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
     // first container
     // ---------------
-    transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+    transform = glm::translate(transform, glm::vec3(x, y, 0.0f));
     transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
+    transform = glm::scale(transform, glm::vec3(xScaleAmount, yScaleAmount, 1.0));
     // render container
     unsigned int transformLoc = glGetUniformLocation(imageShader.ID, "transform");
     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
