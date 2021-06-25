@@ -7,3 +7,9 @@ ex12
 ex12.cc
 imgui.ini
 viewer
+.DS_Store
+canvas.dSYM
+demo.dSYM
+main.dSYM
+stb
+viewer.dSYM

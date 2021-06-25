@@ -75,10 +75,12 @@ bool show_app_triangle_rotation = false;
 bool show_app_image_rotation = true;
 
 static void ShowExampleAppTriangleRotation( unsigned int vao, TriangleShader triangle_shader);
-static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsigned int texture1, unsigned int texture2, unsigned int box_width, unsigned int box_height);
+static void ShowExampleImagePosition(unsigned int vao, Shader imageShader, unsigned int texture, int unsigned box_width, int unsigned box_height, int image_width, int image_height);
+
 static void set_triangle_shader(TriangleShader triangle_shader, float* translation, float rotation, float* color);
 static void set_image_shader(Shader imageShader, float* translation, float rotation, float* color);
-void create_image(unsigned int &VBO, unsigned int &VAO, unsigned int &EBO, unsigned int &texture1, unsigned int &texture2)
+
+void create_image(unsigned int &VBO, unsigned int &VAO, unsigned int &EBO, unsigned int &texture, int &width, int &height)
 {
     float vertices[] = {
         // positions          // texture coords
@@ -117,8 +119,8 @@ void create_image(unsigned int &VBO, unsigned int &VAO, unsigned int &EBO, unsig
     // -------------------------
    // texture 1
     // ---------
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1); 
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture); 
      // set the texture wrapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -126,46 +128,21 @@ void create_image(unsigned int &VBO, unsigned int &VAO, unsigned int &EBO, unsig
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load image, create texture and generate mipmaps
-    int width, height, nrChannels;
+    int nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("chromesphere_1024x512.jpeg", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
+        std::cout << "Image with : " << width << " Image height : " << height << std:: endl;
     }
     else
     {
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-    // texture 2
-    // ---------
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
-    data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        // note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(data);
-
-
-
 }
 
 void create_triangle(unsigned int &vbo, unsigned int &vao)
@@ -255,19 +232,19 @@ int main(int, char**)
         return 1;
     }
 
-	int screen_width, screen_height;
+	int screen_width, screen_height, image_width, image_height;
 	glfwGetFramebufferSize(window, &screen_width, &screen_height);
 	glViewport(0, 0, screen_width, screen_height);
 
 	// create our geometries
-	unsigned int vbo, vao, ebo, texture1, texture2;
+	unsigned int vbo, vao, ebo, texture;
     
     if (show_app_triangle_rotation) create_triangle(vbo, vao);
-    if (show_app_image_rotation) create_image(vbo, vao, ebo, texture1, texture2);
+    if (show_app_image_rotation) create_image(vbo, vao, ebo, texture, image_width, image_height);
 	// init TriangleShader
 
 	TriangleShader triangle_shader;
-    Shader ourShader("4.2.rot.vs", "4.2.rot.fs");
+    Shader ourShader("viewer1.0.vs", "viewer1.0.fs");
 
     if (show_app_triangle_rotation) triangle_shader.init(FileManager::read("simple-shader.vs"), FileManager::read("simple-shader.fs"));
 
@@ -305,9 +282,7 @@ int main(int, char**)
     if (show_app_image_rotation) {
         ourShader.use(); // don't forget to activate/use the shader before setting uniforms!
         // either set it manually like so:
-        glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
-        // or set it via the texture class
-        ourShader.setInt("texture2", 1);
+        glUniform1i(glGetUniformLocation(ourShader.ID, "img"), 0);
     }
     // Main loop
     while (!glfwWindowShouldClose(window))
@@ -331,7 +306,7 @@ int main(int, char**)
         ImGui::NewFrame();
 
         if (show_app_triangle_rotation) ShowExampleAppTriangleRotation(vao, triangle_shader);
-        if (show_app_image_rotation) ShowExampleImageRotation(vao, ourShader, texture1, texture2, box_width, box_height);
+        if (show_app_image_rotation) ShowExampleImagePosition(vao, ourShader, texture, box_width, box_height, image_width, image_height);
             
         static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
 
@@ -392,24 +367,38 @@ static void set_triangle_shader(TriangleShader triangle_shader, float* translati
         triangle_shader.setUniform("color", color[0], color[1], color[2]);
 
 }
-static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsigned int texture1, unsigned int texture2, unsigned int box_width, unsigned int box_height) {
+
+static void ShowExampleImagePosition( unsigned int vao, Shader imageShader, unsigned int texture, unsigned int box_width, unsigned int box_height, int image_width, int image_height) {
+
     ImGuiIO& io = ImGui::GetIO();
-    float x = (box_width + (io.DisplaySize.x - box_width) * 0.5) / io.DisplaySize.x;
-    float y = -(box_height + (io.DisplaySize.x - box_height) * 0.5) / io.DisplaySize.y;
-    float xScaleAmount = (io.DisplaySize.x - box_width) / io.DisplaySize.x;
-    float yScaleAmount = (io.DisplaySize.y - box_height) / io.DisplaySize.y;
+    float x = (float)box_width / (float)io.DisplaySize.x;
+    float y = -(float)box_height / (float)io.DisplaySize.y;
+
+    float ara = ((float)io.DisplaySize.x - (float)box_width) / ((float)io.DisplaySize.y - (float)box_height);
+    float ari = (float)image_width / (float)image_height;
+
+    float xScaleAmount;
+    float yScaleAmount;
+
+    if (ari > ara) 
+    {
+        xScaleAmount = 2.0 * ((float)io.DisplaySize.x - (float)box_width) / (float)io.DisplaySize.x;
+        yScaleAmount = 2.0 * ((float)io.DisplaySize.x - (float)box_width) / (ari * (float)io.DisplaySize.y);
+    }
+    else
+    {
+        xScaleAmount = 2.0 * ari * ((float)io.DisplaySize.y - (float)box_height) / (float)io.DisplaySize.x;
+        yScaleAmount = 2.0 * ((float)io.DisplaySize.y - (float)box_height) / (float)io.DisplaySize.y;
+    }
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texture2);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     // create transformations
     glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
     // first container
     // ---------------
     transform = glm::translate(transform, glm::vec3(x, y, 0.0f));
-    transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
     transform = glm::scale(transform, glm::vec3(xScaleAmount, yScaleAmount, 1.0));
     // render container
     unsigned int transformLoc = glGetUniformLocation(imageShader.ID, "transform");
@@ -417,17 +406,6 @@ static void ShowExampleImageRotation( unsigned int vao, Shader imageShader, unsi
  
     // with the uniform matrix set, draw the first container
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    // second transformation
-    // ---------------------
-    transform = glm::mat4(1.0f); // reset it to identity matrix
-    transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
-    float scaleAmount = sin(glfwGetTime());
-    transform = glm::scale(transform, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, &transform[0][0]); // this time take the matrix value array's first element as its memory pointer value
-
-    // now with the uniform matrix being replaced with new transformations, draw it again.
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
