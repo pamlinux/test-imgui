@@ -130,7 +130,7 @@ void create_image(unsigned int &VBO, unsigned int &VAO, unsigned int &EBO, unsig
     int nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char *data = stbi_load("chromesphere_1024x512.jpeg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("2011-05-20 14.58.58.jpg", &width, &height, &nrChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -230,7 +230,8 @@ int main(int, char**)
         fprintf(stderr, "Failed to initialize OpenGL loader!\n");
         return 1;
     }
-
+    if (GL_ARB_texture_non_power_of_two)
+        std::cout << "GL_ARB_texture_non_power_of_two : " << GL_ARB_texture_non_power_of_two << std::endl;
 	int screen_width, screen_height, image_width, image_height;
 	glfwGetFramebufferSize(window, &screen_width, &screen_height);
 	glViewport(0, 0, screen_width, screen_height);
