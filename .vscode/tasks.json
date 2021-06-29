@@ -84,5 +84,54 @@
 			"group": "build",
 			"detail": "compilateur : /usr/bin/g++"
 		},
+		{
+			"type": "cppbuild",
+			"label": "C/C++: cl.exe générer le fichier actif",
+			"command": "cl.exe",
+			"args": [
+				"/Zi",
+				"/EHsc",
+				"/nologo",
+				"/Fe:",
+				"${fileDirname}\\${fileBasenameNoExtension}.exe",
+				"/I",
+				"C:/Users/moret/test-imgui",
+				"/I",
+				"C:\\Users\\moret\\GL\\include",
+				"/I",
+				"C:\\Users\\moret\\imgui-1.83",
+				"/I",
+				"C:\\Users\\moret\\imgui-1.83\\backends",
+				"${file}",
+				"C:\\Users\\moret\\imgui-1.83\\*.cpp",
+				"C:\\Users\\moret\\imgui-1.83\\backends\\imgui_impl_opengl3.cpp",
+				"C:\\Users\\moret\\imgui-1.83\\backends\\imgui_impl_glfw.cpp",
+				"C:/Users/moret/test-imgui/glad.c",
+				"C:/Users/moret/test-imgui/opengl_shader.cc",
+				"C:/Users/moret/test-imgui/file_manager.cc",
+				"glfw3.lib",
+				"opengl32.lib",
+				"gdi32.lib",
+				"vcruntime.lib",
+				"shell32.lib",
+                "vcruntime.lib",
+                "msvcrt.lib",
+				"/link",
+				"/LIBPATH:\"C:\\Users\\moret\\GL\\lib\""
+
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compilateur : cl.exe"
+		}
+
 	]
 }
