@@ -6,6 +6,8 @@
 			"label": "C/C++: clang++ générer MacOS",
 			"command": "/usr/bin/clang++",
 			"args": [
+				"--std",
+				"c++17",
 				"-g",
 				"${file}",
 				"/Users/pam/imgui-1.83/glad.c",
@@ -126,10 +128,7 @@
 			"problemMatcher": [
 				"$msCompile"
 			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"detail": "compilateur : cl.exe"
 		}
 
