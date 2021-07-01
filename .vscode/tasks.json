@@ -75,7 +75,13 @@
 				"-I",
 				"/home/pam/medwx",
 				"-L/usr/lib/x86_64-linux-gnu",
-				"-lglfw", "-lGL",  "-lX11", "-lpthread", "-lXrandr", "-lXi", "-ldl",
+				"-lglfw",
+				"-lGL",
+				"-lX11",
+				"-lpthread",
+				"-lXrandr",
+				"-lXi",
+				"-ldl"
 			],
 			"options": {
 				"cwd": "${fileDirname}"
@@ -91,6 +97,7 @@
 			"label": "C/C++: cl.exe générer le fichier actif",
 			"command": "cl.exe",
 			"args": [
+				"/std:c++17",
 				"/Zi",
 				"/EHsc",
 				"/nologo",
@@ -116,11 +123,10 @@
 				"gdi32.lib",
 				"vcruntime.lib",
 				"shell32.lib",
-                "vcruntime.lib",
-                "msvcrt.lib",
+				"vcruntime.lib",
+				"msvcrt.lib",
 				"/link",
 				"/LIBPATH:\"C:\\Users\\moret\\GL\\lib\""
-
 			],
 			"options": {
 				"cwd": "${fileDirname}"
@@ -131,6 +137,5 @@
 			"group": "build",
 			"detail": "compilateur : cl.exe"
 		}
-
 	]
 }

@@ -17,20 +17,17 @@
             "intelliSenseMode": "macos-clang-x64"
         },
         {
-            "name": "Mac",
+            "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/Users/pam/imgui-1.83",
-                "/Users/pam/imgui-1.83/backends",
-                "/Users/pam/medwx/stb",
-                "/Users/pam/medwx/learnopengl",
-                "/Users/pam/medwx"
+                "C:\\\\Users\\\\moret\\\\GL\\\\include",
+                "C:\\\\Users\\\\moret\\\\imgui-1.83",
+                "C:\\\\Users\\\\moret\\\\imgui-1.83\\\\backends"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/clang++",
-            "cStandard": "gnu17",
-            "cppStandard": "gnu++17",
-            "intelliSenseMode": "macos-clang-x64"
+            "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.16.27023/bin/Hostx64/x64/cl.exe",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
         }
     ],
     "version": 4
