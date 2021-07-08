@@ -50,6 +50,8 @@
 			"label": "C/C++: g++ générer linux",
 			"command": "/usr/bin/g++",
 			"args": [
+				"--std",
+				"c++17",
 				"-g",
 				"${file}",
 				"/home/pam/imgui-1.83/glad.c",
